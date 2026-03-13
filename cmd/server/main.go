@@ -8,10 +8,18 @@ import (
 	"os"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/irfan-ghzl/pintour/internal/application/auth"
+	appbooking "github.com/irfan-ghzl/pintour/internal/application/booking"
+	apppayment "github.com/irfan-ghzl/pintour/internal/application/payment"
+	appreview "github.com/irfan-ghzl/pintour/internal/application/review"
+	apptour "github.com/irfan-ghzl/pintour/internal/application/tour"
 	"github.com/irfan-ghzl/pintour/internal/config"
 	db "github.com/irfan-ghzl/pintour/internal/db/sqlc"
-	"github.com/irfan-ghzl/pintour/internal/gapi"
-	"github.com/irfan-ghzl/pintour/internal/middleware"
+	infrapayment "github.com/irfan-ghzl/pintour/internal/infrastructure/payment"
+	"github.com/irfan-ghzl/pintour/internal/infrastructure/oauth"
+	"github.com/irfan-ghzl/pintour/internal/infrastructure/persistence"
+	grpchandler "github.com/irfan-ghzl/pintour/internal/interface/grpc"
+	"github.com/irfan-ghzl/pintour/internal/interface/middleware"
 	"github.com/irfan-ghzl/pintour/internal/token"
 	pb "github.com/irfan-ghzl/pintour/pb/pintour/v1"
 	"github.com/rs/zerolog"
@@ -42,17 +50,32 @@ func main() {
 	}
 	log.Info().Msg("connected to database")
 
+	// Infrastructure layer
 	store := db.New(conn)
+	userRepo := persistence.NewUserRepository(store)
+	tourRepo := persistence.NewTourRepository(store)
+	bookingRepo := persistence.NewBookingRepository(store)
+	paymentRepo := persistence.NewPaymentRepository(store)
+	reviewRepo := persistence.NewReviewRepository(store)
 
-	server, err := gapi.NewServer(cfg, store)
-	if err != nil {
-		log.Fatal().Err(err).Msg("cannot create server")
-	}
+	paymentGateway := infrapayment.NewMidtransGateway(cfg.MidtransServerKey, cfg.MidtransIsProduction)
+	oauthProvider := oauth.NewGoogleProvider(cfg.GoogleClientID, cfg.GoogleClientSecret, cfg.GoogleRedirectURL)
 
+	// Token maker
 	tokenMaker, err := token.NewJWTMaker(cfg.TokenSymmetricKey)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot create token maker")
 	}
+
+	// Application layer
+	authService := auth.NewService(userRepo, tokenMaker, oauthProvider, cfg)
+	tourService := apptour.NewService(tourRepo)
+	bookingService := appbooking.NewService(bookingRepo, tourRepo)
+	paymentService := apppayment.NewService(paymentRepo, bookingRepo, userRepo, paymentGateway, cfg.MidtransServerKey)
+	reviewService := appreview.NewService(reviewRepo, bookingRepo, userRepo)
+
+	// Interface layer — thin gRPC handlers
+	server := grpchandler.NewServer(authService, tourService, bookingService, paymentService, reviewService)
 
 	// Start gRPC server
 	grpcServer := grpc.NewServer(

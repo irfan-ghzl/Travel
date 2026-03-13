@@ -20,20 +20,18 @@ type contextKey string
 
 const PayloadKey contextKey = "payload"
 
-// publicMethods contains gRPC methods that don't require authentication
 var publicMethods = map[string]bool{
-	"/pintour.v1.AuthService/Register":              true,
-	"/pintour.v1.AuthService/Login":                 true,
-	"/pintour.v1.AuthService/GoogleLogin":           true,
-	"/pintour.v1.TourService/ListTourPackages":      true,
-	"/pintour.v1.TourService/GetTourPackage":        true,
-	"/pintour.v1.TourService/ListDestinations":      true,
-	"/pintour.v1.TourService/ListTourSchedules":     true,
-	"/pintour.v1.ReviewService/ListReviews":         true,
+	"/pintour.v1.AuthService/Register":               true,
+	"/pintour.v1.AuthService/Login":                  true,
+	"/pintour.v1.AuthService/GoogleLogin":            true,
+	"/pintour.v1.TourService/ListTourPackages":       true,
+	"/pintour.v1.TourService/GetTourPackage":         true,
+	"/pintour.v1.TourService/ListDestinations":       true,
+	"/pintour.v1.TourService/ListTourSchedules":      true,
+	"/pintour.v1.ReviewService/ListReviews":          true,
 	"/pintour.v1.PaymentService/PaymentNotification": true,
 }
 
-// AuthInterceptor creates a gRPC server interceptor for authorization
 func AuthInterceptor(tokenMaker token.Maker) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		if publicMethods[info.FullMethod] {
@@ -72,7 +70,6 @@ func AuthInterceptor(tokenMaker token.Maker) grpc.UnaryServerInterceptor {
 	}
 }
 
-// GetPayload extracts the payload from the context
 func GetPayload(ctx context.Context) (*token.Payload, error) {
 	payload, ok := ctx.Value(PayloadKey).(*token.Payload)
 	if !ok {
