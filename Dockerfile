@@ -14,5 +14,5 @@ COPY --from=builder /app/main .
 COPY app.env .
 COPY internal/db/migration ./internal/db/migration
 COPY docs/swagger ./docs/swagger
-EXPOSE 8080 9090
+EXPOSE 8080 8081
 CMD ["/app/main"]
