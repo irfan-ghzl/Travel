@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.24-alpine AS builder
+FROM golang:1.25-alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
@@ -14,5 +14,5 @@ COPY --from=builder /app/main .
 COPY app.env .
 COPY internal/db/migration ./internal/db/migration
 COPY docs/swagger ./docs/swagger
-EXPOSE 8080 9090
+EXPOSE 8080 8081
 CMD ["/app/main"]
