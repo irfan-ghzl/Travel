@@ -1,0 +1,175 @@
+syntax = "proto3";
+
+package pintour.v1;
+
+option go_package = "github.com/irfan-ghzl/pintour/pb/pintour/v1;pintourv1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "pintour/v1/common.proto";
+
+// Booking status enum
+enum BookingStatus {
+  BOOKING_STATUS_UNSPECIFIED = 0;
+  BOOKING_STATUS_PENDING = 1;
+  BOOKING_STATUS_CONFIRMED = 2;
+  BOOKING_STATUS_CANCELLED = 3;
+  BOOKING_STATUS_COMPLETED = 4;
+}
+
+// Booking participant
+message BookingParticipant {
+  int64 id = 1;
+  string name = 2;
+  string id_card_number = 3;
+  string date_of_birth = 4;
+}
+
+// Booking
+message Booking {
+  int64 id = 1;
+  string booking_code = 2;
+  int64 user_id = 3;
+  int64 tour_package_id = 4;
+  string tour_title = 5;
+  string travel_date = 6;
+  int32 num_participants = 7;
+  double total_price = 8;
+  BookingStatus status = 9;
+  string notes = 10;
+  repeated BookingParticipant participants = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+// Create booking request
+message CreateBookingRequest {
+  int64 tour_package_id = 1;
+  int64 tour_schedule_id = 2;
+  string travel_date = 3;
+  int32 num_participants = 4;
+  string notes = 5;
+  repeated BookingParticipant participants = 6;
+}
+
+// Get booking request
+message GetBookingRequest {
+  int64 id = 1;
+}
+
+// List bookings request (user sees own, admin sees all)
+message ListBookingsRequest {
+  PaginationRequest pagination = 1;
+  BookingStatus status = 2;
+}
+
+// List bookings response
+message ListBookingsResponse {
+  repeated Booking bookings = 1;
+  PaginationResponse pagination = 2;
+}
+
+// Cancel booking request
+message CancelBookingRequest {
+  int64 id = 1;
+  string reason = 2;
+}
+
+// Cancel booking response
+message CancelBookingResponse {
+  string message = 1;
+  Booking booking = 2;
+}
+
+// Update booking status (admin)
+message UpdateBookingStatusRequest {
+  int64 id = 1;
+  BookingStatus status = 2;
+}
+
+// Booking service
+service BookingService {
+  rpc CreateBooking(CreateBookingRequest) returns (Booking) {
+    option (google.api.http) = {
+      post: "/v1/bookings"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create a new booking";
+      tags: "bookings";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc GetBooking(GetBookingRequest) returns (Booking) {
+    option (google.api.http) = {
+      get: "/v1/bookings/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get booking detail";
+      tags: "bookings";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc ListBookings(ListBookingsRequest) returns (ListBookingsResponse) {
+    option (google.api.http) = {
+      get: "/v1/bookings"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List bookings (user sees own, admin sees all)";
+      tags: "bookings";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc CancelBooking(CancelBookingRequest) returns (CancelBookingResponse) {
+    option (google.api.http) = {
+      post: "/v1/bookings/{id}/cancel"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Cancel a booking";
+      tags: "bookings";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc UpdateBookingStatus(UpdateBookingStatusRequest) returns (Booking) {
+    option (google.api.http) = {
+      put: "/v1/admin/bookings/{id}/status"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update booking status (admin)";
+      tags: "admin-bookings";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+}

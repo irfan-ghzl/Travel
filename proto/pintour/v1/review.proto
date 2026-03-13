@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package pintour.v1;
+
+option go_package = "github.com/irfan-ghzl/pintour/pb/pintour/v1;pintourv1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "pintour/v1/common.proto";
+
+// Review
+message Review {
+  int64 id = 1;
+  int64 user_id = 2;
+  string user_name = 3;
+  string user_avatar = 4;
+  int64 tour_package_id = 5;
+  int64 booking_id = 6;
+  int32 rating = 7;
+  string comment = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// Create review request
+message CreateReviewRequest {
+  int64 tour_package_id = 1;
+  int64 booking_id = 2;
+  int32 rating = 3;
+  string comment = 4;
+}
+
+// List reviews request
+message ListReviewsRequest {
+  int64 tour_package_id = 1;
+  PaginationRequest pagination = 2;
+}
+
+// List reviews response
+message ListReviewsResponse {
+  repeated Review reviews = 1;
+  PaginationResponse pagination = 2;
+  double average_rating = 3;
+}
+
+// Delete review request (admin)
+message DeleteReviewRequest {
+  int64 id = 1;
+}
+
+// Delete review response
+message DeleteReviewResponse {
+  string message = 1;
+}
+
+// Review service
+service ReviewService {
+  rpc CreateReview(CreateReviewRequest) returns (Review) {
+    option (google.api.http) = {
+      post: "/v1/reviews"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create a review for a tour";
+      tags: "reviews";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc ListReviews(ListReviewsRequest) returns (ListReviewsResponse) {
+    option (google.api.http) = {
+      get: "/v1/tours/{tour_package_id}/reviews"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List reviews for a tour package";
+      tags: "reviews";
+    };
+  }
+
+  rpc DeleteReview(DeleteReviewRequest) returns (DeleteReviewResponse) {
+    option (google.api.http) = {
+      delete: "/v1/admin/reviews/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete a review (admin)";
+      tags: "admin-reviews";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+}

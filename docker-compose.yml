@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pintour_postgres
+    environment:
+      POSTGRES_USER: pintour
+      POSTGRES_PASSWORD: pintour
+      POSTGRES_DB: pintour_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pintour -d pintour_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build: .
+    container_name: pintour_server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_SOURCE: postgresql://pintour:pintour@postgres:5432/pintour_db?sslmode=disable
+      HTTP_SERVER_ADDRESS: 0.0.0.0:8080
+      GRPC_SERVER_ADDRESS: 0.0.0.0:9090
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+
+volumes:
+  postgres_data:
