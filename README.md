@@ -198,12 +198,24 @@ make server
 
 ### 4. API Documentation
 
-Once running, the Swagger JSON is available at:
+**Online preview (no server needed):**
+
+[![Open in Swagger UI](https://img.shields.io/badge/Swagger-Preview-85EA2D?logo=swagger&logoColor=black)](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/irfan-ghzl/Travel/main/docs/swagger/pintour.swagger.json)
+
+Or open the link directly:
 ```
-http://localhost:8080/swagger.json
+https://petstore.swagger.io/?url=https://raw.githubusercontent.com/irfan-ghzl/Travel/main/docs/swagger/pintour.swagger.json
 ```
 
-You can load this into [Swagger UI](https://swagger.io/tools/swagger-ui/) or [Postman](https://www.postman.com/).
+**Local preview (open in browser, no server needed):**
+```
+docs/swagger/index.html
+```
+
+**While the server is running:**
+```
+http://localhost:8080/swagger/
+```
 
 ## Development Commands
 
