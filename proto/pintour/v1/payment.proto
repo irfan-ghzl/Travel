@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+package pintour.v1;
+
+option go_package = "github.com/irfan-ghzl/pintour/pb/pintour/v1;pintourv1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "pintour/v1/common.proto";
+
+// Payment status enum
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_PAID = 2;
+  PAYMENT_STATUS_FAILED = 3;
+  PAYMENT_STATUS_REFUNDED = 4;
+  PAYMENT_STATUS_EXPIRED = 5;
+}
+
+// Payment method enum
+enum PaymentMethod {
+  PAYMENT_METHOD_UNSPECIFIED = 0;
+  PAYMENT_METHOD_BANK_TRANSFER = 1;
+  PAYMENT_METHOD_CREDIT_CARD = 2;
+  PAYMENT_METHOD_GOPAY = 3;
+  PAYMENT_METHOD_OVO = 4;
+  PAYMENT_METHOD_DANA = 5;
+  PAYMENT_METHOD_QRIS = 6;
+}
+
+// Payment
+message Payment {
+  int64 id = 1;
+  int64 booking_id = 2;
+  string booking_code = 3;
+  PaymentMethod payment_method = 4;
+  double amount = 5;
+  PaymentStatus status = 6;
+  string payment_token = 7;
+  string payment_url = 8;
+  google.protobuf.Timestamp paid_at = 9;
+  google.protobuf.Timestamp expires_at = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// Create payment request
+message CreatePaymentRequest {
+  int64 booking_id = 1;
+  PaymentMethod payment_method = 2;
+}
+
+// Create payment response
+message CreatePaymentResponse {
+  Payment payment = 1;
+  string payment_url = 2;
+  string payment_token = 3;
+}
+
+// Get payment request
+message GetPaymentRequest {
+  int64 booking_id = 1;
+}
+
+// Payment notification (webhook from Midtrans)
+message PaymentNotificationRequest {
+  string order_id = 1;
+  string transaction_status = 2;
+  string fraud_status = 3;
+  string payment_type = 4;
+  string gross_amount = 5;
+  string signature_key = 6;
+}
+
+// Payment notification response
+message PaymentNotificationResponse {
+  string message = 1;
+}
+
+// List payments (admin)
+message ListPaymentsRequest {
+  PaginationRequest pagination = 1;
+  PaymentStatus status = 2;
+}
+
+// List payments response
+message ListPaymentsResponse {
+  repeated Payment payments = 1;
+  PaginationResponse pagination = 2;
+}
+
+// Payment service
+service PaymentService {
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create payment for a booking";
+      tags: "payments";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc GetPayment(GetPaymentRequest) returns (Payment) {
+    option (google.api.http) = {
+      get: "/v1/payments/{booking_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get payment status for a booking";
+      tags: "payments";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc PaymentNotification(PaymentNotificationRequest) returns (PaymentNotificationResponse) {
+    option (google.api.http) = {
+      post: "/v1/payments/notification"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Payment notification webhook (Midtrans)";
+      tags: "payments";
+    };
+  }
+
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse) {
+    option (google.api.http) = {
+      get: "/v1/admin/payments"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List all payments (admin)";
+      tags: "admin-payments";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+}

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package pintour.v1;
+
+option go_package = "github.com/irfan-ghzl/pintour/pb/pintour/v1;pintourv1";
+
+import "google/protobuf/timestamp.proto";
+
+// Pagination request
+message PaginationRequest {
+  int32 page = 1;
+  int32 limit = 2;
+}
+
+// Pagination response
+message PaginationResponse {
+  int32 page = 1;
+  int32 limit = 2;
+  int64 total = 3;
+  int32 total_pages = 4;
+}

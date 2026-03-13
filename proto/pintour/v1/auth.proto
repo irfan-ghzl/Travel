@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package pintour.v1;
+
+option go_package = "github.com/irfan-ghzl/pintour/pb/pintour/v1;pintourv1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "PINTOUR API - Auth Service";
+    version: "1.0";
+    description: "Authentication endpoints for PINTOUR Tour & Travel";
+  }
+};
+
+// User role enum
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_USER = 1;
+  USER_ROLE_ADMIN = 2;
+}
+
+// User message
+message User {
+  int64 id = 1;
+  string email = 2;
+  string name = 3;
+  string phone = 4;
+  string avatar_url = 5;
+  UserRole role = 6;
+  bool is_verified = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// Register request
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string name = 3;
+  string phone = 4;
+}
+
+// Register response
+message RegisterResponse {
+  User user = 1;
+  string access_token = 2;
+  google.protobuf.Timestamp access_token_expires_at = 3;
+}
+
+// Login request
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+// Login response
+message LoginResponse {
+  User user = 1;
+  string session_id = 2;
+  string access_token = 3;
+  google.protobuf.Timestamp access_token_expires_at = 4;
+  string refresh_token = 5;
+  google.protobuf.Timestamp refresh_token_expires_at = 6;
+}
+
+// Google login request
+message GoogleLoginRequest {
+  string code = 1;
+}
+
+// Google login response
+message GoogleLoginResponse {
+  User user = 1;
+  string session_id = 2;
+  string access_token = 3;
+  google.protobuf.Timestamp access_token_expires_at = 4;
+  string refresh_token = 5;
+  google.protobuf.Timestamp refresh_token_expires_at = 6;
+}
+
+// Get user profile request
+message GetProfileRequest {}
+
+// Update profile request
+message UpdateProfileRequest {
+  string name = 1;
+  string phone = 2;
+  string avatar_url = 3;
+}
+
+// Auth service
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/register"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Register a new user";
+      tags: "auth";
+    };
+  }
+
+  rpc Login(LoginRequest) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/login"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Login with email and password";
+      tags: "auth";
+    };
+  }
+
+  rpc GoogleLogin(GoogleLoginRequest) returns (GoogleLoginResponse) {
+    option (google.api.http) = {
+      post: "/v1/auth/google"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Login with Google OAuth2";
+      tags: "auth";
+    };
+  }
+
+  rpc GetProfile(GetProfileRequest) returns (User) {
+    option (google.api.http) = {
+      get: "/v1/auth/profile"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get current user profile";
+      tags: "auth";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc UpdateProfile(UpdateProfileRequest) returns (User) {
+    option (google.api.http) = {
+      put: "/v1/auth/profile"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update user profile";
+      tags: "auth";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+}

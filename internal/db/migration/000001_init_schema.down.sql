@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS "sessions";
+DROP TABLE IF EXISTS "reviews";
+DROP TABLE IF EXISTS "payments";
+DROP TABLE IF EXISTS "booking_participants";
+DROP TABLE IF EXISTS "bookings";
+DROP TABLE IF EXISTS "tour_schedules";
+DROP TABLE IF EXISTS "tour_facilities";
+DROP TABLE IF EXISTS "tour_images";
+DROP TABLE IF EXISTS "tour_itineraries";
+DROP TABLE IF EXISTS "tour_packages";
+DROP TABLE IF EXISTS "destinations";
+DROP TABLE IF EXISTS "users";

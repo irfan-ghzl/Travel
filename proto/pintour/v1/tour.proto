@@ -1,0 +1,310 @@
+syntax = "proto3";
+
+package pintour.v1;
+
+option go_package = "github.com/irfan-ghzl/pintour/pb/pintour/v1;pintourv1";
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "pintour/v1/common.proto";
+
+// Destination
+message Destination {
+  int64 id = 1;
+  string name = 2;
+  string country = 3;
+  string city = 4;
+  string description = 5;
+  string image_url = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// Tour category enum
+enum TourCategory {
+  TOUR_CATEGORY_UNSPECIFIED = 0;
+  TOUR_CATEGORY_ADVENTURE = 1;
+  TOUR_CATEGORY_CULTURAL = 2;
+  TOUR_CATEGORY_BEACH = 3;
+  TOUR_CATEGORY_CITY = 4;
+  TOUR_CATEGORY_NATURE = 5;
+  TOUR_CATEGORY_RELIGIOUS = 6;
+  TOUR_CATEGORY_HONEYMOON = 7;
+  TOUR_CATEGORY_FAMILY = 8;
+}
+
+// Tour itinerary
+message TourItinerary {
+  int64 id = 1;
+  int32 day_number = 2;
+  string title = 3;
+  string description = 4;
+}
+
+// Tour facility
+message TourFacility {
+  int64 id = 1;
+  string name = 2;
+}
+
+// Tour package
+message TourPackage {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  Destination destination = 4;
+  double price = 5;
+  int32 duration_days = 6;
+  int32 max_participants = 7;
+  int32 min_participants = 8;
+  TourCategory category = 9;
+  string image_url = 10;
+  bool is_active = 11;
+  double average_rating = 12;
+  int32 review_count = 13;
+  repeated TourItinerary itineraries = 14;
+  repeated TourFacility facilities = 15;
+  repeated string images = 16;
+  google.protobuf.Timestamp created_at = 17;
+  google.protobuf.Timestamp updated_at = 18;
+}
+
+// Tour schedule
+message TourSchedule {
+  int64 id = 1;
+  int64 tour_package_id = 2;
+  string start_date = 3;
+  string end_date = 4;
+  int32 available_slots = 5;
+  string status = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+// List tour packages request
+message ListTourPackagesRequest {
+  PaginationRequest pagination = 1;
+  string search = 2;
+  TourCategory category = 3;
+  int64 destination_id = 4;
+  double min_price = 5;
+  double max_price = 6;
+  int32 min_duration = 7;
+  int32 max_duration = 8;
+}
+
+// List tour packages response
+message ListTourPackagesResponse {
+  repeated TourPackage packages = 1;
+  PaginationResponse pagination = 2;
+}
+
+// Get tour package request
+message GetTourPackageRequest {
+  int64 id = 1;
+}
+
+// Create tour package request (admin)
+message CreateTourPackageRequest {
+  string title = 1;
+  string description = 2;
+  int64 destination_id = 3;
+  double price = 4;
+  int32 duration_days = 5;
+  int32 max_participants = 6;
+  int32 min_participants = 7;
+  TourCategory category = 8;
+  string image_url = 9;
+}
+
+// Update tour package request (admin)
+message UpdateTourPackageRequest {
+  int64 id = 1;
+  string title = 2;
+  string description = 3;
+  double price = 4;
+  int32 duration_days = 5;
+  int32 max_participants = 6;
+  int32 min_participants = 7;
+  TourCategory category = 8;
+  string image_url = 9;
+  bool is_active = 10;
+}
+
+// Delete tour package request (admin)
+message DeleteTourPackageRequest {
+  int64 id = 1;
+}
+
+// Delete tour package response
+message DeleteTourPackageResponse {
+  string message = 1;
+}
+
+// List destinations request
+message ListDestinationsRequest {
+  PaginationRequest pagination = 1;
+  string search = 2;
+  string country = 3;
+}
+
+// List destinations response
+message ListDestinationsResponse {
+  repeated Destination destinations = 1;
+  PaginationResponse pagination = 2;
+}
+
+// Create destination request (admin)
+message CreateDestinationRequest {
+  string name = 1;
+  string country = 2;
+  string city = 3;
+  string description = 4;
+  string image_url = 5;
+}
+
+// List tour schedules request
+message ListTourSchedulesRequest {
+  int64 tour_package_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+// List tour schedules response
+message ListTourSchedulesResponse {
+  repeated TourSchedule schedules = 1;
+}
+
+// Create tour schedule request (admin)
+message CreateTourScheduleRequest {
+  int64 tour_package_id = 1;
+  string start_date = 2;
+  string end_date = 3;
+  int32 available_slots = 4;
+}
+
+// Tour service
+service TourService {
+  rpc ListTourPackages(ListTourPackagesRequest) returns (ListTourPackagesResponse) {
+    option (google.api.http) = {
+      get: "/v1/tours"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List tour packages";
+      tags: "tours";
+    };
+  }
+
+  rpc GetTourPackage(GetTourPackageRequest) returns (TourPackage) {
+    option (google.api.http) = {
+      get: "/v1/tours/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Get tour package detail";
+      tags: "tours";
+    };
+  }
+
+  rpc CreateTourPackage(CreateTourPackageRequest) returns (TourPackage) {
+    option (google.api.http) = {
+      post: "/v1/admin/tours"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create tour package (admin)";
+      tags: "admin-tours";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc UpdateTourPackage(UpdateTourPackageRequest) returns (TourPackage) {
+    option (google.api.http) = {
+      put: "/v1/admin/tours/{id}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Update tour package (admin)";
+      tags: "admin-tours";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc DeleteTourPackage(DeleteTourPackageRequest) returns (DeleteTourPackageResponse) {
+    option (google.api.http) = {
+      delete: "/v1/admin/tours/{id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Delete tour package (admin)";
+      tags: "admin-tours";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc ListDestinations(ListDestinationsRequest) returns (ListDestinationsResponse) {
+    option (google.api.http) = {
+      get: "/v1/destinations"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List destinations";
+      tags: "destinations";
+    };
+  }
+
+  rpc CreateDestination(CreateDestinationRequest) returns (Destination) {
+    option (google.api.http) = {
+      post: "/v1/admin/destinations"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create destination (admin)";
+      tags: "admin-destinations";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+
+  rpc ListTourSchedules(ListTourSchedulesRequest) returns (ListTourSchedulesResponse) {
+    option (google.api.http) = {
+      get: "/v1/tours/{tour_package_id}/schedules"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "List tour schedules";
+      tags: "tours";
+    };
+  }
+
+  rpc CreateTourSchedule(CreateTourScheduleRequest) returns (TourSchedule) {
+    option (google.api.http) = {
+      post: "/v1/admin/tours/{tour_package_id}/schedules"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Create tour schedule (admin)";
+      tags: "admin-tours";
+      security: {
+        security_requirement: {
+          key: "BearerAuth";
+          value: {};
+        }
+      };
+    };
+  }
+}
