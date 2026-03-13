@@ -73,28 +73,89 @@ A complete backend for **PINTOUR**, a Tour & Travel International platform, buil
 | `GET`  | `/v1/tours/{tour_package_id}/reviews` | List tour reviews |
 | `DELETE` | `/v1/admin/reviews/{id}` | Delete review 🔒 Admin |
 
+## Architecture — Domain-Driven Design (DDD)
+
+This project follows the **Domain-Driven Design (DDD)** layered architecture:
+
+```
+┌──────────────────────────────────────────────────┐
+│  Interface Layer  (internal/interface/)           │
+│  - grpc/          thin gRPC handlers              │
+│  - middleware/    auth interceptor                │
+├──────────────────────────────────────────────────┤
+│  Application Layer  (internal/application/)       │
+│  - auth/          use-case services + DTOs        │
+│  - tour/                                         │
+│  - booking/                                      │
+│  - payment/                                      │
+│  - review/                                       │
+├──────────────────────────────────────────────────┤
+│  Domain Layer  (internal/domain/)                 │
+│  - entity/        pure business entities         │
+│  - repository/    repository interfaces (ports)  │
+├──────────────────────────────────────────────────┤
+│  Infrastructure Layer  (internal/infrastructure/) │
+│  - persistence/   sqlc-backed repository impls   │
+│  - payment/       Midtrans gateway adapter       │
+│  - oauth/         Google OAuth provider          │
+└──────────────────────────────────────────────────┘
+```
+
+### Dependency Rule
+Each layer only depends on layers below it:
+- **Interface** → Application → Domain ← Infrastructure
+
 ## Project Structure
 
 ```
 pintour/
-├── cmd/server/           # Application entry point
+├── cmd/server/                 # Entry point — wires all DDD layers
 ├── internal/
-│   ├── config/           # Configuration (viper)
+│   ├── config/                 # Configuration (viper)
+│   ├── token/                  # JWT token management (cross-cutting)
+│   ├── util/                   # Helpers: password, random (cross-cutting)
 │   ├── db/
-│   │   ├── migration/    # PostgreSQL migrations
-│   │   ├── query/        # SQL queries (sqlc source)
-│   │   └── sqlc/         # Generated type-safe DB code
-│   ├── gapi/             # gRPC service implementations
-│   ├── middleware/        # gRPC auth interceptor
-│   ├── token/            # JWT token management
-│   └── util/             # Helpers (password, random)
-├── pb/pintour/v1/        # Generated proto Go code
-├── proto/pintour/v1/     # Proto definitions
-├── third_party/          # googleapis + grpc-gateway protos
-├── docs/swagger/         # Generated Swagger JSON
-├── app.env               # Local dev configuration
-├── docker-compose.yml    # PostgreSQL + server
-└── Makefile              # Dev commands
+│   │   ├── migration/          # PostgreSQL schema migrations
+│   │   ├── query/              # SQL source queries (sqlc input)
+│   │   └── sqlc/               # sqlc-generated type-safe DB code
+│   │
+│   ├── domain/                 # ── DOMAIN LAYER ──
+│   │   ├── entity/             # Pure business entities (no external deps)
+│   │   │   ├── user.go
+│   │   │   ├── tour.go
+│   │   │   ├── booking.go
+│   │   │   ├── payment.go
+│   │   │   └── review.go
+│   │   └── repository/         # Repository interfaces (ports)
+│   │       ├── user.go
+│   │       ├── tour.go
+│   │       ├── booking.go
+│   │       ├── payment.go
+│   │       └── review.go
+│   │
+│   ├── application/            # ── APPLICATION LAYER ──
+│   │   ├── auth/               # Use-cases: Register, Login, GoogleLogin, GetProfile
+│   │   ├── tour/               # Use-cases: ListPackages, GetPackage, CreatePackage…
+│   │   ├── booking/            # Use-cases: CreateBooking, ListBookings, Cancel…
+│   │   ├── payment/            # Use-cases: CreatePayment, HandleNotification…
+│   │   └── review/             # Use-cases: CreateReview, ListReviews, Delete…
+│   │
+│   ├── infrastructure/         # ── INFRASTRUCTURE LAYER ──
+│   │   ├── persistence/        # Repository implementations backed by sqlc
+│   │   ├── payment/            # Midtrans Snap gateway adapter
+│   │   └── oauth/              # Google OAuth2 provider
+│   │
+│   └── interface/              # ── INTERFACE LAYER ──
+│       ├── grpc/               # Thin gRPC handlers (proto ↔ DTO translation only)
+│       └── middleware/         # gRPC auth interceptor
+│
+├── pb/pintour/v1/              # Generated proto Go code
+├── proto/pintour/v1/           # Proto definitions (source of truth)
+├── third_party/                # googleapis + grpc-gateway protos
+├── docs/swagger/               # Generated Swagger JSON
+├── app.env.example             # Configuration template
+├── docker-compose.yml          # PostgreSQL + server containers
+└── Makefile                    # Dev commands
 ```
 
 ## Getting Started
