@@ -5,12 +5,12 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	"github.com/irfan-ghzl/pintour/internal/config"
+	"github.com/irfan-ghzl/pintour/common/config"
 	"github.com/irfan-ghzl/pintour/internal/domain/entity"
 	"github.com/irfan-ghzl/pintour/internal/domain/repository"
 	"github.com/irfan-ghzl/pintour/internal/infrastructure/oauth"
-	"github.com/irfan-ghzl/pintour/internal/token"
-	"github.com/irfan-ghzl/pintour/internal/util"
+	"github.com/irfan-ghzl/pintour/common/token"
+	"github.com/irfan-ghzl/pintour/common/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

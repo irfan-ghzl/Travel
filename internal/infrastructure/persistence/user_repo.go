@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	db "github.com/irfan-ghzl/pintour/internal/db/sqlc"
+	db "github.com/irfan-ghzl/pintour/db/sqlc"
 	"github.com/irfan-ghzl/pintour/internal/domain/entity"
 	"github.com/irfan-ghzl/pintour/internal/domain/repository"
 )

@@ -13,14 +13,15 @@ import (
 	apppayment "github.com/irfan-ghzl/pintour/internal/application/payment"
 	appreview "github.com/irfan-ghzl/pintour/internal/application/review"
 	apptour "github.com/irfan-ghzl/pintour/internal/application/tour"
-	"github.com/irfan-ghzl/pintour/internal/config"
-	db "github.com/irfan-ghzl/pintour/internal/db/sqlc"
+	"github.com/irfan-ghzl/pintour/common/config"
+	db "github.com/irfan-ghzl/pintour/db/sqlc"
 	infrapayment "github.com/irfan-ghzl/pintour/internal/infrastructure/payment"
 	"github.com/irfan-ghzl/pintour/internal/infrastructure/oauth"
 	"github.com/irfan-ghzl/pintour/internal/infrastructure/persistence"
-	grpchandler "github.com/irfan-ghzl/pintour/internal/interface/grpc"
-	"github.com/irfan-ghzl/pintour/internal/interface/middleware"
-	"github.com/irfan-ghzl/pintour/internal/token"
+	"github.com/irfan-ghzl/pintour/common/logger"
+	grpchandler "github.com/irfan-ghzl/pintour/common/interface/grpc"
+	"github.com/irfan-ghzl/pintour/common/interface/middleware"
+	"github.com/irfan-ghzl/pintour/common/token"
 	pb "github.com/irfan-ghzl/pintour/pb/pintour/v1"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -130,7 +131,7 @@ func main() {
 
 	httpServer := &http.Server{
 		Addr:    cfg.HTTPServerAddress,
-		Handler: httpMux,
+		Handler: logger.HTTPLogger(httpMux),
 	}
 
 	log.Info().Msgf("starting HTTP gateway at %s", cfg.HTTPServerAddress)

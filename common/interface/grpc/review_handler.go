@@ -4,7 +4,7 @@ import (
 	"context"
 
 	appreview "github.com/irfan-ghzl/pintour/internal/application/review"
-	"github.com/irfan-ghzl/pintour/internal/interface/middleware"
+	"github.com/irfan-ghzl/pintour/common/interface/middleware"
 	pb "github.com/irfan-ghzl/pintour/pb/pintour/v1"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
