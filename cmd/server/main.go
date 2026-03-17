@@ -6,6 +6,9 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/irfan-ghzl/pintour/internal/application/auth"
@@ -134,8 +137,27 @@ func main() {
 		Handler: logger.HTTPLogger(httpMux),
 	}
 
-	log.Info().Msgf("starting HTTP gateway at %s", cfg.HTTPServerAddress)
-	if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatal().Err(err).Msg("cannot start HTTP gateway")
+	go func() {
+		log.Info().Msgf("starting HTTP gateway at %s", cfg.HTTPServerAddress)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal().Err(err).Msg("cannot start HTTP gateway")
+		}
+	}()
+
+	// Block until an OS signal is received, then shut down gracefully.
+	shutdownSignal := make(chan os.Signal, 1)
+	signal.Notify(shutdownSignal, syscall.SIGINT, syscall.SIGTERM)
+	<-shutdownSignal
+
+	log.Info().Msg("shutting down servers...")
+
+	grpcServer.GracefulStop()
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := httpServer.Shutdown(shutdownCtx); err != nil {
+		log.Error().Err(err).Msg("HTTP server shutdown error")
 	}
+
+	log.Info().Msg("servers stopped")
 }
