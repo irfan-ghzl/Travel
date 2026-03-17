@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/irfan-ghzl/pintour/internal/token"
+	"github.com/irfan-ghzl/pintour/common/token"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"

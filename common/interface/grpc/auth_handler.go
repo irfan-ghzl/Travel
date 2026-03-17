@@ -5,7 +5,7 @@ import (
 
 	"github.com/irfan-ghzl/pintour/internal/application/auth"
 	"github.com/irfan-ghzl/pintour/internal/domain/entity"
-	"github.com/irfan-ghzl/pintour/internal/interface/middleware"
+	"github.com/irfan-ghzl/pintour/common/interface/middleware"
 	pb "github.com/irfan-ghzl/pintour/pb/pintour/v1"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/timestamppb"

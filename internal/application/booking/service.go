@@ -7,7 +7,7 @@ import (
 
 	"github.com/irfan-ghzl/pintour/internal/domain/entity"
 	"github.com/irfan-ghzl/pintour/internal/domain/repository"
-	"github.com/irfan-ghzl/pintour/internal/util"
+	"github.com/irfan-ghzl/pintour/common/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
